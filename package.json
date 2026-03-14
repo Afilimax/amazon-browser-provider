@@ -1,14 +1,15 @@
 {
-  "name": "@afilimax/amazon-provider",
+  "name": "@afilimax/amazon-browser-provider",
+  "description": "Provedor de afiliação via navegador para links da Amazon. Feito por Afilimax.",
   "version": "0.1.0",
   "type": "commonjs",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Afilimax/amazon-provider.git"
+    "url": "https://github.com/Afilimax/amazon-browser-provider.git"
   },
-  "homepage": "https://github.com/Afilimax/amazon-provider#readme",
+  "homepage": "https://github.com/Afilimax/amazon-browser-provider#readme",
   "bugs": {
-    "url": "https://github.com/Afilimax/amazon-provider/issues"
+    "url": "https://github.com/Afilimax/amazon-browser-provider/issues"
   },
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -21,13 +22,18 @@
     "build": "tsc",
     "dev": "ts-node ./src/index.ts",
     "format": "prettier --write \"src/**/*.ts\"",
-    "lint": "eslint \"src/**/*.ts\" --fix"
+    "lint": "eslint \"src/**/*.ts\" --fix",
+    "test": "vitest run"
   },
   "publishConfig": {
     "access": "public"
   },
   "keywords": [
-    "marcuth"
+    "afilimax",
+    "amazon provider",
+    "browser automation",
+    "affiliate url gernerator",
+    "amazon affiliate"
   ],
   "author": "Marcuth",
   "license": "MIT",
@@ -40,6 +46,16 @@
     "prettier": "^3.8.1",
     "prettier-plugin-sort-imports": "^1.8.11",
     "ts-node": "^10.9.2",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.0"
+  },
+  "peerDependencies": {
+    "@afilimax/core": "^0.4.1"
+  },
+  "dependencies": {
+    "@mihnea.dev/puppeteer-extra-amazon-captcha": "^1.0.3",
+    "puppeteer": "^24.39.1",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2"
   }
 }
