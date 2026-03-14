@@ -3,7 +3,7 @@
 [![npm version](https://img.shields.io/npm/v/@afilimax/amazon-browser-provider.svg)](https://www.npmjs.com/package/@afilimax/amazon-browser-provider)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Este pacote é um provedor de afiliação para o ecossistema **Afilimax**, especializado em gerar links de afiliados da Amazon através de automação de navegador (Puppeteer). 
+Este pacote é um provedor de afiliação para o ecossistema **Afilimax**, implementando a interface `AffiliateProvider` do pacote [`@afilimax/core`](../core). Ele é especializado em gerar links de afiliados da Amazon através de automação de navegador (Puppeteer). 
 
 Diferente de abordagens baseadas apenas em manipulação de strings, este provedor utiliza o **Amazon SiteStripe** real para gerar links curtos (`amzn.to`), garantindo que o link seja oficial e rastreável.
 
@@ -85,6 +85,10 @@ O provedor identifica e processa automaticamente URLs dos seguintes domínios:
 - `amazon.com.br`
 - `a.co`
 - `amzn.to` (para expansão/tracking)
+
+## 🏗️ Arquitetura e Contrato
+
+Este provedor segue rigorosamente o contrato definido em `affiliate-provider.interface.ts` do `@afilimax/core`. Ele estende a classe base abstrata `AffiliateProvider`, garantindo compatibilidade com o `AffiliateManager` para uso em cadeias de provedores.
 
 ## 🧪 Desenvolvimento
 
