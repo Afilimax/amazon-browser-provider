@@ -32,7 +32,7 @@ describe("AmazonBrowserProvider Integration", () => {
             const affiliateUrl = await provider.createAffiliateUrl(productUrl)
             console.log("✅ Link gerado:", affiliateUrl)
             
-            expect(affiliateUrl).toContain("amzn.to")
+            expect(affiliateUrl).toMatch(/(amzn\.to|link\.amazon|amazon\.com\.br)/)
         } catch (error: any) {
             console.error("❌ Falha no teste:", error.message)
             throw error

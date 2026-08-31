@@ -24,7 +24,7 @@ export class AmazonBrowserProvider extends AffiliateProvider<AmazonBrowserProvid
         this.puppeteer.use(StealthPlugin())
     }
 
-    readonly domains = ["amazon.com.br", "a.co", "amzn.to"]
+    readonly domains = ["amazon.com.br", "a.co", "amzn.to", "link.amazon"]
 
     private async tryBypassCaptcha(page: Page) {
         try {
@@ -36,10 +36,38 @@ export class AmazonBrowserProvider extends AffiliateProvider<AmazonBrowserProvid
     private async tryWaitForApiResponse(page: Page) {
         try {
             await page.waitForResponse(
-                (response) => response.url().includes("amazon.com.br/associates/sitestripe/getShortUrl"),
+                (response) => response.url().includes("associates/sitestripe/getShortUrl"),
                 { timeout: 6000 },
             )
         } catch {}
+    }
+
+    private async clickSingleButton(page: Page, selector: string): Promise<boolean> {
+        try {
+            const el = await page.$(selector)
+            
+            if (el) {
+                try {
+                    await el.click()
+                } catch {
+                    await page.evaluate((sel) => {
+                        const target = document.querySelector(sel) as HTMLElement
+                        if (target) target.click()
+                    }, selector)
+                }
+                return true
+            }
+        } catch {}
+
+        return false
+    }
+
+    private async clickGetLinkButton(page: Page): Promise<boolean> {
+        return this.clickSingleButton(page, "#amzn-ss-get-link-button")
+    }
+
+    private async clickCopyAffiliateLinkButton(page: Page): Promise<boolean> {
+        return this.clickSingleButton(page, "#amzn-ss-copy-affiliate-link-btn-announce")
     }
 
     async createAffiliateUrl(url: string): Promise<string> {
@@ -72,18 +100,62 @@ export class AmazonBrowserProvider extends AffiliateProvider<AmazonBrowserProvid
 
             await this.tryBypassCaptcha(page)
 
-            await page.waitForSelector("#amzn-ss-get-link-button", { timeout: 12000 })
-            await page.click("#amzn-ss-get-link-button")
+            const apiResponsePromise = page
+                .waitForResponse(
+                    (response) =>
+                        response.url().includes("associates/sitestripe/getShortUrl") &&
+                        response.status() === 200,
+                    { timeout: 35000 },
+                )
+                .then(async (res) => {
+                    try {
+                        const data = (await res.json()) as { shortUrl?: string; longUrl?: string }
+                        if (data && (data.shortUrl || data.longUrl)) {
+                            return (data.shortUrl || data.longUrl) as string
+                        }
+                    } catch {}
+                    return null
+                })
+                .catch(() => null)
 
-            await this.tryWaitForApiResponse(page)
+            const waitForSelectors = "#amzn-ss-get-link-button, #amzn-ss-copy-affiliate-link-btn-announce"
 
-            await page.waitForSelector("#amzn-ss-text-shortlink-textarea", { timeout: 12000, visible: true })
+            await page.waitForSelector(waitForSelectors, { timeout: 15000 })
 
-            const affiliateUrl = await page.evaluate(
-                () =>
-                    document.querySelector("#amzn-ss-text-shortlink-textarea")?.textContent ||
-                    (document.querySelector("#amzn-ss-text-shortlink-textarea") as HTMLTextAreaElement)?.value,
-            )
+            // 1. Clica no primeiro botão ("Obter link")
+            await this.clickGetLinkButton(page)
+
+            // Espera até 15 segundos pela resposta da API
+            let affiliateUrl = await Promise.race([
+                apiResponsePromise,
+                new Promise<null>((resolve) => setTimeout(() => resolve(null), 15000)),
+            ])
+
+            // 2. Se não obteve o link em 15 segundos, clica no segundo botão ("Copiar link de associado")
+            if (!affiliateUrl) {
+                await this.clickCopyAffiliateLinkButton(page)
+                affiliateUrl = await Promise.race([
+                    apiResponsePromise,
+                    new Promise<null>((resolve) => setTimeout(() => resolve(null), 15000)),
+                ])
+            }
+
+            if (!affiliateUrl) {
+                try {
+                    await page.waitForSelector("#amzn-ss-text-shortlink-textarea", {
+                        timeout: 5000,
+                        visible: true,
+                    })
+                    const textUrl = await page.evaluate(
+                        () =>
+                            document.querySelector("#amzn-ss-text-shortlink-textarea")?.textContent ||
+                            (document.querySelector("#amzn-ss-text-shortlink-textarea") as HTMLTextAreaElement)?.value,
+                    )
+                    if (textUrl) {
+                        affiliateUrl = textUrl.trim()
+                    }
+                } catch {}
+            }
 
             if (!affiliateUrl) {
                 throw new Error("Failed to create Amazon affiliate URL")
