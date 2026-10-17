@@ -1,7 +1,7 @@
 {
   "name": "@afilimax/amazon-browser-provider",
   "description": "Provedor de afiliação via navegador para links da Amazon. Feito por Afilimax.",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "type": "commonjs",
   "repository": {
     "type": "git",
