@@ -1,7 +1,7 @@
 {
   "name": "@afilimax/amazon-browser-provider",
   "description": "Provedor de afiliação via navegador para links da Amazon. Feito por Afilimax.",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "type": "commonjs",
   "repository": {
     "type": "git",
@@ -50,7 +50,7 @@
     "vitest": "^4.1.0"
   },
   "peerDependencies": {
-    "@afilimax/core": "^0.4.1"
+    "@afilimax/core": ">=0.4.1"
   },
   "dependencies": {
     "@mihnea.dev/puppeteer-extra-amazon-captcha": "^1.0.3",
