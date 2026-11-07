@@ -35,17 +35,16 @@ export class AmazonBrowserProvider extends AffiliateProvider<AmazonBrowserProvid
 
     private async tryWaitForApiResponse(page: Page) {
         try {
-            await page.waitForResponse(
-                (response) => response.url().includes("associates/sitestripe/getShortUrl"),
-                { timeout: 6000 },
-            )
+            await page.waitForResponse((response) => response.url().includes("associates/sitestripe/getShortUrl"), {
+                timeout: 6000,
+            })
         } catch {}
     }
 
     private async clickSingleButton(page: Page, selector: string): Promise<boolean> {
         try {
             const el = await page.$(selector)
-            
+
             if (el) {
                 try {
                     await el.click()
@@ -103,8 +102,7 @@ export class AmazonBrowserProvider extends AffiliateProvider<AmazonBrowserProvid
             const apiResponsePromise = page
                 .waitForResponse(
                     (response) =>
-                        response.url().includes("associates/sitestripe/getShortUrl") &&
-                        response.status() === 200,
+                        response.url().includes("associates/sitestripe/getShortUrl") && response.status() === 200,
                     { timeout: 35000 },
                 )
                 .then(async (res) => {
