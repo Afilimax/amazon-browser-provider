@@ -11,7 +11,7 @@ export function getBrowserPath(): string {
 
     const commonPaths = [
         "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
-        "C:\\Program Files (x86)\\Google\Chrome\\Application\\chrome.exe",
+        "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
         path.join(process.env.LOCALAPPDATA || "", "Google\\Chrome\\Application\\chrome.exe"),
         "C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe",
         "C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe"
