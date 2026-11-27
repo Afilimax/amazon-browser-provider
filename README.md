@@ -7,110 +7,159 @@
 
 # @afilimax/amazon-browser-provider
 
-Este pacote é um provedor de afiliação para o ecossistema **Afilimax**, implementando a interface `AffiliateProvider` do pacote [`@afilimax/core`](https://www.npmjs.com/package/@afilimax/core). Ele é especializado em gerar links de afiliados da Amazon através de automação de navegador (Puppeteer). 
+Provedor de links de afiliado da Amazon para o ecossistema Afilimax. O pacote automatiza o SiteStripe com Puppeteer para obter links oficiais e também permite acrescentar uma tag de associado diretamente à URL, sem abrir o navegador.
 
-Diferente de abordagens baseadas apenas em manipulação de strings, este provedor utiliza o **Amazon SiteStripe** real para gerar links curtos (`amzn.to`), garantindo que o link seja oficial e rastreável.
+## Recursos
 
-## 🚀 Principais Recursos
+- Geração de links oficiais pelo Amazon SiteStripe.
+- Suporte a links curtos `amzn.to` e aos demais formatos devolvidos pelo SiteStripe.
+- Automação com `puppeteer-extra`, modo stealth e suporte a CAPTCHA da Amazon.
+- Uso de cookies de uma sessão autenticada no Amazon Associates.
+- Remoção de parâmetros e segmentos de rastreamento antes do processamento.
+- Alternativa síncrona para criar URL com tag, sem iniciar o navegador.
+- Compatibilidade com `AffiliateProvider` e `AffiliateManager`.
 
-- 🤖 **Automação com Puppeteer**: Navega como um usuário real para interagir com o SiteStripe.
-- 🔗 **Links amzn.to**: Gera links curtos oficiais da Amazon.
-- 🛡️ **Stealth Mode**: Utiliza `puppeteer-extra-plugin-stealth` para evitar detecção de bots.
-- 🧩 **Resolução de Captcha**: Integração nativa para lidar com captchas da Amazon.
-- 🍪 **Gestão de Sessão**: Suporte a cookies para manter-se logado na conta de associado.
-- 🇧🇷 **Focado no Brasil**: Otimizado para `amazon.com.br`.
-
-## 📦 Instalação
+## Instalação
 
 ```bash
 npm install @afilimax/amazon-browser-provider @afilimax/core
 ```
 
-### Peer Dependencies
+O `@afilimax/core` é uma dependência de par obrigatória, na versão `>=0.4.1`.
 
-Este pacote requer que o `@afilimax/core` esteja instalado em seu projeto:
+## Como usar
 
-```bash
-npm install @afilimax/core
-```
-
-## 🛠️ Como Usar
-
-Para que o provedor consiga gerar o link através do SiteStripe, você **precisa** fornecer cookies de uma sessão válida (logada) na Amazon Associates.
+Forneça os cookies da sessão de associado e chame `createAffiliateUrl`:
 
 ```typescript
-import { AmazonBrowserProvider } from "@afilimax/amazon-browser-provider";
+import { readFileSync } from "node:fs"
+import { AmazonBrowserProvider } from "@afilimax/amazon-browser-provider"
 
 const provider = new AmazonBrowserProvider({
-  cookies: [
-    // Seus cookies da Amazon aqui
-    { name: "session-id", value: "...", domain: ".amazon.com.br" },
-    // ...
-  ],
-  puppeteer: {
-    headless: true, // Defina como false para debugar visualmente
-  }
-});
+    cookies: JSON.parse(readFileSync("cookies.json", "utf8")),
+    puppeteer: {
+        headless: true,
+    },
+})
 
-const productUrl = "https://www.amazon.com.br/dp/B07TV9B7Z3";
+async function main() {
+    const productUrl = "https://www.amazon.com.br/dp/B07TV9B7Z3"
 
-async function generate() {
-  try {
-    const affiliateUrl = await provider.createAffiliateUrl(productUrl);
-    console.log("Link de Afiliado:", affiliateUrl); // Ex: https://amzn.to/3xyzABC
-  } catch (error) {
-    console.error("Erro ao gerar link:", error);
-  }
+    try {
+        const affiliateUrl = await provider.createAffiliateUrl(productUrl)
+        console.log("Affiliate URL:", affiliateUrl)
+    } catch (error) {
+        console.error("Failed to create affiliate URL:", error)
+    }
 }
 
-generate();
+main()
 ```
 
-### Uso com Tag Direta (Sem Browser)
+Cada chamada abre e fecha um navegador. Use `puppeteer.headless: false` para acompanhar a automação durante o diagnóstico.
 
-Se você não precisar de um link curto (`amzn.to`) e quiser apenas injetar sua tag de associado na URL, pode usar o método síncrono:
+### Uso sem navegador
+
+Quando o link curto não for necessário, injete apenas a tag de associado:
 
 ```typescript
-const simpleUrl = provider.createAffiliateUrlWithTag(productUrl, "minhatag-20");
-console.log(simpleUrl); 
-// Saída: https://www.amazon.com.br/dp/B07TV9B7Z3?tag=minhatag-20
+const provider = new AmazonBrowserProvider({ cookies: [] })
+const affiliateUrl = provider.createAffiliateUrlWithTag(
+    "https://www.amazon.com.br/dp/B07TV9B7Z3",
+    "your-tag-20",
+)
+
+console.log("Affiliate URL:", affiliateUrl)
 ```
 
-## ⚙️ Configurações (`AmazonBrowserProviderOptions`)
+Esse método é síncrono, remove os parâmetros existentes e não executa o SiteStripe.
 
-| Opção | Tipo | Descrição |
-|-------|------|-----------|
-| `cookies` | `any[]` | **Obrigatório.** Lista de cookies para autenticação no Amazon Associates. |
-| `puppeteer` | `LaunchOptions` | Configurações opcionais para o lançamento do Puppeteer. |
+### Uso com AffiliateManager
 
-## 🔍 Domínios Suportados
+```typescript
+import { AffiliateManager } from "@afilimax/core"
+import { AmazonBrowserProvider } from "@afilimax/amazon-browser-provider"
 
-O provedor identifica e processa automaticamente URLs dos seguintes domínios:
+const manager = new AffiliateManager([
+    new AmazonBrowserProvider({
+        cookies: JSON.parse(readFileSync("cookies.json", "utf8")),
+    }),
+])
+
+const affiliateUrl = await manager.createAffiliateUrl("https://www.amazon.com.br/dp/B07TV9B7Z3")
+console.log(affiliateUrl)
+```
+
+O gerenciador retorna `null` se nenhum provedor registrado suportar o domínio da URL.
+
+## Configuração
+
+A interface `AmazonBrowserProviderOptions` aceita:
+
+| Opção | Tipo | Padrão | Descrição |
+| :--- | :--- | :--- | :--- |
+| `cookies` | `any[]` | Obrigatório | Cookies exportados da sessão autenticada no Amazon Associates. |
+| `puppeteer` | `LaunchOptions` | `{}` | Opções repassadas ao lançamento do Puppeteer. |
+
+O provedor usa `headless: true`, viewport padrão nulo e argumentos de compatibilidade do Chromium. As opções informadas em `puppeteer` sobrescrevem esses padrões.
+
+### Como obter os cookies
+
+1. Faça login na conta usada no Amazon Associates.
+2. Confirme que o SiteStripe aparece nas páginas de produto.
+3. Exporte os cookies da Amazon em JSON com sua extensão de preferência.
+4. Salve o arquivo fora do controle de versão e carregue-o na opção `cookies`.
+
+Nunca publique `cookies.json`: os valores permitem reutilizar sua sessão.
+
+## Referência da API
+
+### `createAffiliateUrl(url: string): Promise<string>`
+
+Abre a página limpa do produto, aplica os cookies e solicita o link pelo SiteStripe. O método lança `Failed to create Amazon affiliate URL` quando nenhum link é obtido.
+
+### `createAffiliateUrlWithTag(url: string, tag: string): string`
+
+Remove parâmetros de rastreamento da URL e retorna uma nova URL com `?tag=<tag>`.
+
+### `supportsUrl(url: string): boolean`
+
+Método herdado de `AffiliateProvider` que verifica se o host pertence aos domínios suportados.
+
+### Domínios suportados
+
 - `amazon.com.br`
 - `a.co`
-- `amzn.to` (para expansão/tracking)
+- `amzn.to`
+- `link.amazon`, incluindo seus subdomínios
 
-## 🏗️ Arquitetura e Contrato
+### Erros comuns
 
-Este provedor segue rigorosamente o contrato definido em `affiliate-provider.interface.ts` do `@afilimax/core`. Ele estende a classe base abstrata `AffiliateProvider`, garantindo compatibilidade com o `AffiliateManager` para uso em cadeias de provedores.
+| Sintoma | Causa provável | Ação |
+| :--- | :--- | :--- |
+| `Failed to create Amazon affiliate URL` | SiteStripe indisponível, sessão expirada ou seletores não encontrados. | Renove os cookies e execute com `headless: false` para inspecionar a página. |
+| CAPTCHA ou redirecionamento de login | A Amazon recusou a sessão automatizada. | Faça login manualmente, exporte novos cookies e reduza a frequência das execuções. |
+| Falha ao iniciar o Chromium | Navegador ou dependências do sistema ausentes. | Configure `puppeteer.executablePath` ou instale um Chromium compatível. |
 
-## 🧪 Desenvolvimento
+## Desenvolvimento
 
-Para rodar os testes:
+Instale as dependências com `npm install`. Os scripts disponíveis são:
 
-```bash
-npm test
-```
+| Comando | Finalidade |
+| :--- | :--- |
+| `npm run dev` | Executa `src/index.ts` com `ts-node`. |
+| `npm run build` | Compila o TypeScript para `dist/`. |
+| `npm test` | Executa os testes com Vitest. |
+| `npm run test:watch` | Executa os testes em modo de observação. |
+| `npm run test:cov` | Executa os testes com cobertura. |
+| `npm run lint` | Executa o ESLint com correção automática. |
+| `npm run format` | Formata os arquivos de `src/` com Prettier. |
 
-Para gerar a build:
+A suíte inclui um teste de integração que abre o navegador e tenta gerar um link real. Para autenticar esse teste, coloque os cookies em `__tests__/cookies.json`. A execução depende do SiteStripe e do estado da sessão.
 
-```bash
-npm run build
-```
+## Licença
 
----
-
-Feito com ❤️ por **Afilimax**.
+Distribuído sob a licença [MIT](./LICENSE).
 
 ---
 
