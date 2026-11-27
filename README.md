@@ -1,7 +1,11 @@
-# @afilimax/amazon-browser-provider
+<a href="https://afilimax.net"><img src="https://raw.githubusercontent.com/Afilimax/.github/main/assets/npm-banner.svg" alt="Afilimax — Encontre a oferta. Gere o link. Divulgue sozinho." width="100%" /></a>
 
-[![npm version](https://img.shields.io/npm/v/@afilimax/amazon-browser-provider.svg)](https://www.npmjs.com/package/@afilimax/amazon-browser-provider)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![npm version](https://img.shields.io/npm/v/%40afilimax%2Famazon-browser-provider?logo=npm)](https://www.npmjs.com/package/@afilimax/amazon-browser-provider)
+[![npm downloads](https://img.shields.io/npm/dm/%40afilimax%2Famazon-browser-provider?logo=npm)](https://www.npmjs.com/package/@afilimax/amazon-browser-provider)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/Afilimax/amazon-browser-provider/blob/HEAD/LICENSE)
+[![Website](https://img.shields.io/badge/website-afilimax.net-7857FF)](https://afilimax.net)
+
+# @afilimax/amazon-browser-provider
 
 Este pacote é um provedor de afiliação para o ecossistema **Afilimax**, implementando a interface `AffiliateProvider` do pacote [`@afilimax/core`](https://www.npmjs.com/package/@afilimax/core). Ele é especializado em gerar links de afiliados da Amazon através de automação de navegador (Puppeteer). 
 
@@ -107,3 +111,10 @@ npm run build
 ---
 
 Feito com ❤️ por **Afilimax**.
+---
+
+## Automatize sua operação de afiliados
+
+> Use este pacote para automatizar sua operação de afiliados. Conheça a plataforma Afilimax e transforme ofertas em links e divulgação automática.
+
+[Conheça a Afilimax](https://afilimax.net) · [Pacote no npm](https://www.npmjs.com/package/@afilimax/amazon-browser-provider) · [Repositório no GitHub](https://github.com/Afilimax/amazon-browser-provider)
